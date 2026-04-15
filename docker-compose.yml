@@ -1,3 +1,5 @@
+name: project-management-system
+
 services:
   backend:
     build:
