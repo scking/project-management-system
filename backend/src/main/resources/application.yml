@@ -7,9 +7,9 @@ spring:
   application:
     name: project-management-backend
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/project_mgmt?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: supplier_app
-    password: supplier123
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:project_mgmt}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:supplier_app}
+    password: ${DB_PASS:supplier123}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -21,7 +21,7 @@ mybatis-plus:
     map-underscore-to-camel-case: true
 
 portal:
-  sso-base-url: http://127.0.0.1:3000/api
+  sso-base-url: ${PORTAL_SSO_BASE_URL:http://127.0.0.1:3000/api}
   app-code: project
 
 app:
