@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: project-backend
+    ports:
+      - "9280:9280"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: project-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3280:80"

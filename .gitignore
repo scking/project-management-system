@@ -1,0 +1,10 @@
+frontend/node_modules
+frontend/dist
+frontend/tsconfig.tsbuildinfo
+frontend/src/**/*.js
+backend/target
+.m2
+.idea
+.vscode
+backend/data
+.DS_Store

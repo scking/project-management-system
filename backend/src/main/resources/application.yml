@@ -1,0 +1,29 @@
+server:
+  port: 9280
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: project-management-backend
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/project_mgmt?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: supplier_app
+    password: supplier123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+portal:
+  sso-base-url: http://127.0.0.1:3000/api
+  app-code: project
+
+app:
+  jwt-secret: project-system-dev-secret
+  token-expire-seconds: 28800
