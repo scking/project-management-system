@@ -1,19 +1,34 @@
 <template>
-  <div class="page-shell">
-    <el-card>
-      <template #header>
-        <div class="card-header-row">
-          <span>任务分配管理</span>
-          <el-button type="primary" @click="openCreate">新增任务</el-button>
-        </div>
-      </template>
-      <div class="toolbar-row">
-        <el-input v-model="query.keyword" placeholder="搜索任务标题 / 项目 / 责任人" clearable class="toolbar-input" />
-        <el-select v-model="query.status" clearable placeholder="任务状态" class="toolbar-select">
-          <el-option v-for="item in taskStatusOptions" :key="item" :label="item" :value="item" />
-        </el-select>
-        <el-button type="primary" @click="loadData">查询</el-button>
+  <div class="saas-list-page">
+    <div class="saas-page-header">
+      <div>
+        <h2 class="saas-page-title">任务分配管理</h2>
+        <p class="saas-page-subtitle">分派任务、跟踪进度、变更任务状态</p>
       </div>
+      <div class="saas-row-actions">
+        <el-button type="primary" @click="openCreate">
+          <el-icon><Plus /></el-icon>
+          <span>新增任务</span>
+        </el-button>
+      </div>
+    </div>
+
+    <div class="saas-toolbar">
+      <el-input
+        v-model="query.keyword"
+        placeholder="搜索任务标题 / 项目 / 责任人"
+        clearable
+        class="toolbar-input"
+        :prefix-icon="Search"
+        @keyup.enter="loadData"
+      />
+      <el-select v-model="query.status" clearable placeholder="任务状态" class="toolbar-select">
+        <el-option v-for="item in taskStatusOptions" :key="item" :label="item" :value="item" />
+      </el-select>
+      <el-button type="primary" @click="loadData">查询</el-button>
+    </div>
+
+    <section class="saas-card is-flush">
       <el-table :data="rows" stripe>
         <el-table-column prop="taskCode" label="任务编号" width="160" />
         <el-table-column prop="taskTitle" label="任务标题" min-width="220" />
@@ -35,7 +50,7 @@
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </section>
 
     <el-dialog v-model="dialogVisible" title="新增任务" width="760px">
       <el-form :model="form" label-width="110px">
@@ -81,6 +96,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
+import { Plus, Search } from "@element-plus/icons-vue";
 import { taskApi } from "@/api/task";
 
 const taskStatusOptions = ["待接收", "进行中", "已完成", "未完成", "已延期", "已关闭"];

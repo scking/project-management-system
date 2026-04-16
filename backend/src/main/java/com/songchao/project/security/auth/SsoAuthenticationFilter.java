@@ -24,12 +24,10 @@ public class SsoAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            Long userId = tokenService.parseUserId(authHeader.substring(7));
-            if (userId != null) {
-                Object cached = request.getSession().getAttribute("CURRENT_USER");
-                if (cached instanceof CurrentUser currentUser && currentUser.userId().equals(userId)) {
-                    AuthContext.set(currentUser);
-                }
+            CurrentUser currentUser = tokenService.parseCurrentUser(authHeader.substring(7));
+            if (currentUser != null) {
+                AuthContext.set(currentUser);
+                request.getSession(true).setAttribute("CURRENT_USER", currentUser);
             }
         }
         try {
@@ -39,4 +37,3 @@ public class SsoAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 }
-

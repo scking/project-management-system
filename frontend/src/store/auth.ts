@@ -6,6 +6,7 @@ export interface UserState {
   username: string;
   realName: string;
   deptId: number | null;
+  deptName: string;
   roleCodes: string[];
   permissionCodes: string[];
   dataScope: number;
@@ -17,6 +18,7 @@ export const useAuthStore = defineStore("project-auth", {
     username: "",
     realName: "",
     deptId: null,
+    deptName: "",
     roleCodes: [],
     permissionCodes: [],
     dataScope: 1,
@@ -30,6 +32,7 @@ export const useAuthStore = defineStore("project-auth", {
       this.username = data.username;
       this.realName = data.realName;
       this.deptId = data.deptId;
+      this.deptName = data.deptName || "";
       this.roleCodes = data.roleCodes;
       this.permissionCodes = data.permissionCodes;
       this.dataScope = data.dataScope;

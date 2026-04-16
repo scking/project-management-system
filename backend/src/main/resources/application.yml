@@ -7,10 +7,14 @@ spring:
   application:
     name: project-management-backend
   datasource:
-    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:project_mgmt}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: ${DB_USER:supplier_app}
-    password: ${DB_PASS:supplier123}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:h2:file:./data/project_mgmt;MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER}
+    username: ${DB_USER:sa}
+    password: ${DB_PASS:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai

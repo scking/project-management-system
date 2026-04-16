@@ -4,6 +4,8 @@ import com.songchao.project.audit.operationlog.annotation.OperationLogRecord;
 import com.songchao.project.common.api.ApiResponse;
 import com.songchao.project.modules.projectmgmt.dto.LeaveApproveRequest;
 import com.songchao.project.modules.projectmgmt.dto.LeaveSaveRequest;
+import com.songchao.project.modules.projectmgmt.dto.ProjectMemberSaveRequest;
+import com.songchao.project.modules.projectmgmt.dto.ProjectSaveRequest;
 import com.songchao.project.modules.projectmgmt.dto.TaskSaveRequest;
 import com.songchao.project.modules.projectmgmt.dto.TaskStatusUpdateRequest;
 import com.songchao.project.modules.projectmgmt.dto.WeeklyReportSaveRequest;
@@ -11,8 +13,10 @@ import com.songchao.project.modules.projectmgmt.service.ProjectManagementService
 import com.songchao.project.security.permission.RequirePermission;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,10 +46,54 @@ public class ProjectManagementController {
         return ApiResponse.ok(service.listProjects(keyword));
     }
 
+    @PostMapping("/projects")
+    @RequirePermission("project:project:view")
+    @OperationLogRecord(module = "项目管理", operation = "CREATE", bizType = "PROJECT", description = "新增项目")
+    public ApiResponse<Map<String, Object>> createProject(@RequestBody ProjectSaveRequest request) {
+        return ApiResponse.ok(service.createProject(request));
+    }
+
+    @PutMapping("/projects/{id}")
+    @RequirePermission("project:project:view")
+    @OperationLogRecord(module = "项目管理", operation = "UPDATE", bizType = "PROJECT", description = "编辑项目")
+    public ApiResponse<Map<String, Object>> updateProject(@PathVariable Long id, @RequestBody ProjectSaveRequest request) {
+        return ApiResponse.ok(service.updateProject(id, request));
+    }
+
+    @DeleteMapping("/projects/{id}")
+    @RequirePermission("project:project:view")
+    @OperationLogRecord(module = "项目管理", operation = "DELETE", bizType = "PROJECT", description = "删除项目")
+    public ApiResponse<Boolean> deleteProject(@PathVariable Long id) {
+        service.deleteProject(id);
+        return ApiResponse.ok(Boolean.TRUE);
+    }
+
     @GetMapping("/project-members")
     @RequirePermission("project:member:view")
     public ApiResponse<List<Map<String, Object>>> projectMembers() {
         return ApiResponse.ok(service.listProjectMembers());
+    }
+
+    @PostMapping("/project-members")
+    @RequirePermission("project:member:view")
+    @OperationLogRecord(module = "项目管理", operation = "CREATE", bizType = "PROJECT_MEMBER", description = "新增项目成员")
+    public ApiResponse<Map<String, Object>> createProjectMember(@RequestBody ProjectMemberSaveRequest request) {
+        return ApiResponse.ok(service.createProjectMember(request));
+    }
+
+    @PutMapping("/project-members/{id}")
+    @RequirePermission("project:member:view")
+    @OperationLogRecord(module = "项目管理", operation = "UPDATE", bizType = "PROJECT_MEMBER", description = "编辑项目成员")
+    public ApiResponse<Map<String, Object>> updateProjectMember(@PathVariable Long id, @RequestBody ProjectMemberSaveRequest request) {
+        return ApiResponse.ok(service.updateProjectMember(id, request));
+    }
+
+    @DeleteMapping("/project-members/{id}")
+    @RequirePermission("project:member:view")
+    @OperationLogRecord(module = "项目管理", operation = "DELETE", bizType = "PROJECT_MEMBER", description = "删除项目成员")
+    public ApiResponse<Boolean> deleteProjectMember(@PathVariable Long id) {
+        service.deleteProjectMember(id);
+        return ApiResponse.ok(Boolean.TRUE);
     }
 
     @GetMapping("/tasks")
@@ -78,7 +126,7 @@ public class ProjectManagementController {
     }
 
     @PostMapping("/weekly-reports")
-    @RequirePermission("project:weekly-report:create")
+    @RequirePermission("project:weekly-report:view")
     @OperationLogRecord(module = "项目管理", operation = "CREATE", bizType = "WEEKLY_REPORT", description = "提交周报")
     public ApiResponse<Map<String, Object>> createWeeklyReport(@Valid @RequestBody WeeklyReportSaveRequest request) {
         return ApiResponse.ok(service.createWeeklyReport(request));

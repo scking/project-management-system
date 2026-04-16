@@ -51,6 +51,7 @@ public class PortalSsoClient {
                 user.path("username").asText(),
                 user.path("realName").asText(),
                 user.path("deptId").isMissingNode() ? null : user.path("deptId").asLong(),
+                user.path("department").path("name").asText(null),
                 roleCodes,
                 permissionCodes,
                 user.path("dataScope").asInt(1)
@@ -71,10 +72,10 @@ public class PortalSsoClient {
             String username,
             String realName,
             Long deptId,
+            String deptName,
             List<String> roleCodes,
             List<String> permissionCodes,
             Integer dataScope
     ) {
     }
 }
-

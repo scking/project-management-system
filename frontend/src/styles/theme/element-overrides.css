@@ -1,0 +1,240 @@
+/* ============================================================
+ * Element Plus 变量覆盖 —— 基于 saas tokens
+ * 加载顺序：tokens.css → element-plus/dist/index.css → 本文件
+ * ============================================================ */
+
+:root {
+  /* ---- 主色映射到 EP ---- */
+  --el-color-primary: var(--saas-brand-600);
+  --el-color-primary-light-3: var(--saas-brand-400);
+  --el-color-primary-light-5: var(--saas-brand-300);
+  --el-color-primary-light-7: var(--saas-brand-200);
+  --el-color-primary-light-8: var(--saas-brand-100);
+  --el-color-primary-light-9: var(--saas-brand-50);
+  --el-color-primary-dark-2: var(--saas-brand-700);
+
+  --el-color-success: var(--saas-success);
+  --el-color-warning: var(--saas-warning);
+  --el-color-danger:  var(--saas-danger);
+  --el-color-error:   var(--saas-danger);
+  --el-color-info:    var(--saas-info);
+
+  /* 背景 */
+  --el-bg-color: var(--saas-bg-card);
+  --el-bg-color-page: var(--saas-bg-page);
+  --el-bg-color-overlay: var(--saas-bg-card);
+  --el-fill-color-light: var(--saas-bg-subtle);
+  --el-fill-color-lighter: var(--saas-bg-hover);
+  --el-fill-color-blank: var(--saas-bg-card);
+
+  /* 边框 */
+  --el-border-color: var(--saas-border-1);
+  --el-border-color-light: var(--saas-border-3);
+  --el-border-color-lighter: var(--saas-border-3);
+  --el-border-color-extra-light: var(--saas-border-3);
+  --el-border-radius-base: var(--saas-radius-md);
+  --el-border-radius-small: var(--saas-radius-sm);
+  --el-border-radius-round: 999px;
+
+  /* 文本 */
+  --el-text-color-primary: var(--saas-text-1);
+  --el-text-color-regular: var(--saas-text-2);
+  --el-text-color-secondary: var(--saas-text-3);
+  --el-text-color-placeholder: var(--saas-text-4);
+  --el-text-color-disabled: var(--saas-text-4);
+
+  /* 阴影 */
+  --el-box-shadow: var(--saas-shadow-md);
+  --el-box-shadow-light: var(--saas-shadow-sm);
+  --el-box-shadow-lighter: var(--saas-shadow-xs);
+
+  /* 字体 */
+  --el-font-family: var(--saas-font-sans);
+  --el-font-size-base: var(--saas-fs-base);
+}
+
+/* ---- 按钮 —— 主按钮加柔和阴影 ---- */
+.el-button {
+  --el-button-font-weight: 500;
+  border-radius: var(--saas-radius-sm);
+  transition: all 0.15s ease;
+}
+.el-button--primary {
+  box-shadow: 0 2px 6px rgba(34, 80, 219, 0.18);
+}
+.el-button--primary:hover,
+.el-button--primary:focus {
+  box-shadow: var(--saas-shadow-brand);
+  transform: translateY(-1px);
+}
+.el-button--primary:active {
+  transform: translateY(0);
+}
+.el-button.is-text {
+  color: var(--saas-brand-600);
+}
+
+/* ---- 输入框 ---- */
+.el-input__wrapper {
+  border-radius: var(--saas-radius-sm);
+  box-shadow: 0 0 0 1px var(--saas-border-1) inset;
+  transition: box-shadow 0.15s ease;
+}
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--saas-border-2) inset;
+}
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--saas-brand-500) inset, 0 0 0 3px rgba(59, 108, 236, 0.12);
+}
+
+/* ---- 卡片 ---- */
+.el-card {
+  border-radius: var(--saas-radius-lg);
+  border: 1px solid var(--saas-border-1);
+  box-shadow: var(--saas-shadow-sm);
+}
+.el-card__header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--saas-border-3);
+  font-weight: 600;
+  color: var(--saas-text-1);
+}
+
+/* ---- 表格 ---- */
+.el-table {
+  --el-table-border-color: var(--saas-border-3);
+  --el-table-header-bg-color: var(--saas-bg-subtle);
+  --el-table-row-hover-bg-color: var(--saas-brand-50);
+  font-size: var(--saas-fs-sm);
+}
+.el-table th.el-table__cell {
+  background-color: var(--saas-bg-subtle) !important;
+  color: var(--saas-text-2);
+  font-weight: 600;
+  height: 44px;
+}
+.el-table td.el-table__cell {
+  padding: 10px 0;
+}
+
+/* ---- 标签 ---- */
+.el-tag {
+  border-radius: var(--saas-radius-sm);
+  font-weight: 500;
+  border: none;
+}
+.el-tag--success { background: var(--saas-success-bg); color: var(--saas-success); }
+.el-tag--warning { background: var(--saas-warning-bg); color: var(--saas-warning); }
+.el-tag--danger  { background: var(--saas-danger-bg);  color: var(--saas-danger); }
+.el-tag--info    { background: var(--saas-info-bg);    color: var(--saas-info); }
+
+/* ---- 菜单 深色侧边栏 ---- */
+.el-menu.saas-side-menu {
+  background: transparent;
+  border-right: 0;
+  padding: 8px;
+}
+.el-menu.saas-side-menu .el-menu-item,
+.el-menu.saas-side-menu .el-sub-menu__title {
+  color: #c6d2e7;
+  border-radius: var(--saas-radius-sm);
+  margin: 2px 0;
+  height: 40px;
+  line-height: 40px;
+}
+.el-menu.saas-side-menu .el-menu-item:hover,
+.el-menu.saas-side-menu .el-sub-menu__title:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+.el-menu.saas-side-menu .el-menu-item.is-active {
+  background: var(--saas-brand-600);
+  color: #ffffff;
+  box-shadow: var(--saas-shadow-brand);
+}
+.el-menu.saas-side-menu .el-menu-item .el-icon,
+.el-menu.saas-side-menu .el-sub-menu__title .el-icon {
+  color: inherit;
+}
+
+/* ---- 分页 ---- */
+.el-pagination {
+  --el-pagination-button-bg-color: var(--saas-bg-card);
+  --el-pagination-hover-color: var(--saas-brand-600);
+  font-weight: 500;
+}
+
+/* ---- 对话框 / 抽屉 ---- */
+.el-dialog {
+  border-radius: var(--saas-radius-lg);
+  overflow: hidden;
+}
+.el-dialog__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--saas-border-3);
+  margin-right: 0;
+}
+.el-dialog__body {
+  padding: 20px;
+}
+.el-drawer__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--saas-border-3);
+  margin-bottom: 0;
+}
+.el-drawer__body {
+  padding: 20px;
+}
+
+/* ---- 消息提示 ---- */
+.el-message {
+  border-radius: var(--saas-radius-md);
+  box-shadow: var(--saas-shadow-lg);
+}
+
+/* ---- 下拉菜单 ---- */
+.el-dropdown-menu {
+  border-radius: var(--saas-radius-md);
+  box-shadow: var(--saas-shadow-lg);
+  padding: 6px;
+}
+.el-dropdown-menu__item {
+  border-radius: var(--saas-radius-sm);
+  font-size: var(--saas-fs-sm);
+}
+
+/* ---- 选项卡 ---- */
+.el-tabs__item {
+  font-weight: 500;
+  color: var(--saas-text-3);
+}
+.el-tabs__item.is-active {
+  color: var(--saas-brand-600);
+}
+.el-tabs__active-bar {
+  background-color: var(--saas-brand-600);
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* ---- Form label ---- */
+.el-form-item__label {
+  color: var(--saas-text-2);
+  font-weight: 500;
+}
+
+/* ---- Breadcrumb ---- */
+.el-breadcrumb__inner {
+  color: var(--saas-text-3);
+  font-weight: 400;
+}
+.el-breadcrumb__item:last-child .el-breadcrumb__inner {
+  color: var(--saas-text-1);
+  font-weight: 600;
+}
+
+/* ---- Scrollbar ---- */
+.el-scrollbar__bar.is-vertical > div,
+.el-scrollbar__bar.is-horizontal > div {
+  background-color: var(--saas-border-2);
+}

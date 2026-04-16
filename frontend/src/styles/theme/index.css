@@ -1,0 +1,8 @@
+/* 入口样式：按顺序汇总
+ * 引用方：
+ *   import 'element-plus/dist/index.css'
+ *   import '@shared-ui-theme/index.css'  // 本文件
+ */
+@import "./tokens.css";
+@import "./element-overrides.css";
+@import "./layout.css";

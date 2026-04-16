@@ -7,6 +7,7 @@ public record CurrentUser(
         String username,
         String realName,
         Long deptId,
+        String deptName,
         List<String> roleCodes,
         List<String> permissionCodes,
         Integer dataScope

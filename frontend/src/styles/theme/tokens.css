@@ -1,0 +1,92 @@
+/* ============================================================
+ * SaaS 统一设计 Token —— 三端共享
+ * 命名规范：--saas-<category>-<variant>
+ * 不直接覆盖 Element Plus 变量，EP 的覆盖放 element-overrides.css
+ * ============================================================ */
+
+:root {
+  /* ---- 主色板 深蓝 ---- */
+  --saas-brand-50:  #eff5ff;
+  --saas-brand-100: #dbe7fe;
+  --saas-brand-200: #bfd5fd;
+  --saas-brand-300: #93b7fb;
+  --saas-brand-400: #608ff6;
+  --saas-brand-500: #3b6cec;
+  --saas-brand-600: #2250db;   /* 主色 */
+  --saas-brand-700: #1a3fb8;
+  --saas-brand-800: #1a3594;
+  --saas-brand-900: #1b3077;
+
+  /* ---- 辅助色 ---- */
+  --saas-success:   #16a34a;
+  --saas-success-bg:#dcfce7;
+  --saas-warning:   #d97706;
+  --saas-warning-bg:#fef3c7;
+  --saas-danger:    #dc2626;
+  --saas-danger-bg: #fee2e2;
+  --saas-info:      #0891b2;
+  --saas-info-bg:   #cffafe;
+
+  /* ---- 中性 ---- */
+  --saas-text-1:    #0f172a;   /* 主标题 */
+  --saas-text-2:    #334155;   /* 正文 */
+  --saas-text-3:    #64748b;   /* 次要 */
+  --saas-text-4:    #94a3b8;   /* 占位/辅助 */
+  --saas-text-inv:  #ffffff;
+
+  --saas-bg-page:   #f5f7fb;
+  --saas-bg-card:   #ffffff;
+  --saas-bg-hover:  #f1f5f9;
+  --saas-bg-subtle: #f8fafc;
+  --saas-bg-aside:  linear-gradient(180deg, #0b1c3b 0%, #122549 100%);
+  --saas-bg-brand-subtle: linear-gradient(135deg, #eff5ff 0%, #dbe7fe 100%);
+
+  --saas-border-1:  #e2e8f0;   /* 常规分割 */
+  --saas-border-2:  #cbd5e1;   /* 强调分割 */
+  --saas-border-3:  #f1f5f9;   /* 淡分割 */
+
+  /* ---- 圆角 ---- */
+  --saas-radius-sm: 6px;
+  --saas-radius-md: 10px;
+  --saas-radius-lg: 14px;
+  --saas-radius-xl: 18px;
+
+  /* ---- 阴影 ---- */
+  --saas-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --saas-shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.05);
+  --saas-shadow-md: 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --saas-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --saas-shadow-brand: 0 6px 20px rgba(34, 80, 219, 0.25);
+
+  /* ---- 间距 ---- */
+  --saas-space-1: 4px;
+  --saas-space-2: 8px;
+  --saas-space-3: 12px;
+  --saas-space-4: 16px;
+  --saas-space-5: 20px;
+  --saas-space-6: 24px;
+  --saas-space-8: 32px;
+  --saas-space-10: 40px;
+
+  /* ---- 字体 ---- */
+  --saas-font-sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --saas-font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  --saas-fs-xs: 12px;
+  --saas-fs-sm: 13px;
+  --saas-fs-base: 14px;
+  --saas-fs-md: 15px;
+  --saas-fs-lg: 18px;
+  --saas-fs-xl: 22px;
+  --saas-fs-2xl: 28px;
+  --saas-fs-3xl: 36px;
+
+  --saas-lh-tight: 1.2;
+  --saas-lh-base: 1.55;
+
+  /* ---- 组件尺寸 ---- */
+  --saas-aside-w: 232px;
+  --saas-aside-w-collapsed: 64px;
+  --saas-header-h: 60px;
+  --saas-tab-h: 40px;
+}

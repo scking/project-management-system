@@ -42,6 +42,7 @@ public class AuthController {
                 validated.username(),
                 validated.realName(),
                 validated.deptId(),
+                validated.deptName(),
                 validated.roleCodes(),
                 validated.permissionCodes(),
                 validated.dataScope()
@@ -53,6 +54,7 @@ public class AuthController {
                 currentUser.username(),
                 currentUser.realName(),
                 currentUser.deptId(),
+                currentUser.deptName(),
                 currentUser.roleCodes(),
                 currentUser.permissionCodes(),
                 currentUser.dataScope(),
@@ -77,6 +79,7 @@ public class AuthController {
                 currentUser.username(),
                 currentUser.realName(),
                 currentUser.deptId(),
+                currentUser.deptName(),
                 currentUser.roleCodes(),
                 currentUser.permissionCodes(),
                 currentUser.dataScope(),

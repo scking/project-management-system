@@ -1,9 +1,21 @@
 <template>
-  <div class="login-page">
-    <div class="login-card">
-      <h1>项目管理系统</h1>
-      <p>本系统通过统一门户单点登录进入，无需单独维护账号密码。</p>
-      <el-button type="primary" :loading="loading" @click="redirectToPortalSso">前往统一门户登录</el-button>
+  <div class="saas-auth-page">
+    <div class="saas-auth-card">
+      <div class="saas-auth-brand">
+        <div class="saas-brand-logo">项</div>
+        <div>
+          <h1 class="saas-auth-title">项目管理系统</h1>
+          <p class="saas-auth-subtitle">由统一门户 SSO 提供登录服务</p>
+        </div>
+      </div>
+      <div class="sso-hint">
+        <el-icon color="var(--saas-brand-600)" :size="18"><Lock /></el-icon>
+        <span>本系统通过统一门户单点登录进入，无需单独维护账号密码。</span>
+      </div>
+      <el-button type="primary" size="large" :loading="loading" style="width: 100%" @click="redirectToPortalSso">
+        前往统一门户登录
+      </el-button>
+      <p class="saas-text-mute saas-auth-footer">© {{ new Date().getFullYear() }} 供应链管理中心</p>
     </div>
   </div>
 </template>
@@ -12,8 +24,9 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
-import { redirectToPortalSso } from "@/composables/usePortalSso";
+import { redirectToPortalSso, syncPortalOrigin } from "@/composables/usePortalSso";
 import { ElMessage } from "element-plus";
+import { Lock } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -21,11 +34,10 @@ const authStore = useAuthStore();
 const loading = ref(false);
 
 onMounted(async () => {
+  syncPortalOrigin();
   const ticket = route.query.sso_ticket;
   const redirect = typeof route.query.redirect === "string" ? route.query.redirect : "/dashboard";
-  if (!ticket || typeof ticket !== "string") {
-    return;
-  }
+  if (!ticket || typeof ticket !== "string") return;
   loading.value = true;
   try {
     await authStore.ssoLogin(ticket);
@@ -35,7 +47,6 @@ onMounted(async () => {
     loading.value = false;
     return;
   }
-
   try {
     ElMessage.success("已通过统一门户自动登录");
     await router.replace(redirect);
@@ -47,3 +58,24 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.sso-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  background: var(--saas-brand-50);
+  border: 1px solid var(--saas-brand-100);
+  border-radius: var(--saas-radius-md);
+  color: var(--saas-text-2);
+  font-size: var(--saas-fs-sm);
+  line-height: 1.6;
+}
+.saas-auth-footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 12px;
+}
+</style>

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.songchao.project.common.exception.BizException;
 import com.songchao.project.modules.projectmgmt.dto.LeaveApproveRequest;
 import com.songchao.project.modules.projectmgmt.dto.LeaveSaveRequest;
+import com.songchao.project.modules.projectmgmt.dto.ProjectMemberSaveRequest;
+import com.songchao.project.modules.projectmgmt.dto.ProjectSaveRequest;
 import com.songchao.project.modules.projectmgmt.dto.TaskSaveRequest;
 import com.songchao.project.modules.projectmgmt.dto.WeeklyReportSaveRequest;
 import com.songchao.project.modules.projectmgmt.entity.PmLeave;
@@ -122,12 +124,76 @@ public class ProjectManagementService {
         return projectMapper.selectList(wrapper).stream().map(this::mapProject).collect(Collectors.toList());
     }
 
+    public Map<String, Object> createProject(ProjectSaveRequest request) {
+        PmProject project = new PmProject();
+        applyProjectSave(project, request);
+        projectMapper.insert(project);
+        return mapProject(project);
+    }
+
+    public Map<String, Object> updateProject(Long id, ProjectSaveRequest request) {
+        PmProject project = projectMapper.selectById(id);
+        if (project == null) {
+            throw new BizException("项目不存在");
+        }
+        applyProjectSave(project, request);
+        projectMapper.updateById(project);
+        return mapProject(project);
+    }
+
+    public void deleteProject(Long id) {
+        PmProject project = projectMapper.selectById(id);
+        if (project == null) {
+            return;
+        }
+        LambdaQueryWrapper<PmProjectMember> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(PmProjectMember::getProjectId, id);
+        projectMemberMapper.delete(memberWrapper);
+
+        LambdaQueryWrapper<PmTask> taskWrapper = new LambdaQueryWrapper<>();
+        taskWrapper.eq(PmTask::getProjectId, id);
+        taskMapper.delete(taskWrapper);
+
+        LambdaQueryWrapper<PmWeeklyReport> reportWrapper = new LambdaQueryWrapper<>();
+        reportWrapper.eq(PmWeeklyReport::getProjectId, id);
+        weeklyReportMapper.delete(reportWrapper);
+
+        LambdaQueryWrapper<PmLeave> leaveWrapper = new LambdaQueryWrapper<>();
+        leaveWrapper.eq(PmLeave::getProjectId, id);
+        leaveMapper.delete(leaveWrapper);
+
+        projectMapper.deleteById(id);
+    }
+
     public List<Map<String, Object>> listProjectMembers() {
         List<PmProject> projects = allProjects();
         return allMembers().stream()
                 .sorted(Comparator.comparing(PmProjectMember::getId).reversed())
                 .map(item -> mapMember(item, projects))
                 .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> createProjectMember(ProjectMemberSaveRequest request) {
+        PmProject project = resolveProject(request.getProjectId(), null);
+        PmProjectMember member = new PmProjectMember();
+        applyMemberSave(member, request, project);
+        projectMemberMapper.insert(member);
+        return mapMember(member, allProjects());
+    }
+
+    public Map<String, Object> updateProjectMember(Long id, ProjectMemberSaveRequest request) {
+        PmProjectMember member = projectMemberMapper.selectById(id);
+        if (member == null) {
+            throw new BizException("项目成员不存在");
+        }
+        PmProject project = resolveProject(request.getProjectId(), null);
+        applyMemberSave(member, request, project);
+        projectMemberMapper.updateById(member);
+        return mapMember(member, allProjects());
+    }
+
+    public void deleteProjectMember(Long id) {
+        projectMemberMapper.deleteById(id);
     }
 
     public List<Map<String, Object>> listTasks(String keyword, String status) {
@@ -211,6 +277,30 @@ public class ProjectManagementService {
         report.setRemark(request.getRemark());
         weeklyReportMapper.insert(report);
         return mapWeeklyReport(report);
+    }
+
+    private void applyProjectSave(PmProject project, ProjectSaveRequest request) {
+        project.setProjectCode(requiredText(request.getProjectCode(), "项目编号不能为空"));
+        project.setProjectName(requiredText(request.getProjectName(), "项目名称不能为空"));
+        project.setProjectType(hasText(request.getProjectType()) ? request.getProjectType().trim() : null);
+        project.setLocation(request.getLocation());
+        project.setOwnerOrg(request.getOwnerOrg());
+        project.setContractAmount(parseAmount(request.getContractAmount()));
+        project.setStartDate(parseDateValue(request.getStartDate(), "开始日期格式不正确"));
+        project.setPlannedFinishDate(parseDateValue(request.getPlannedFinishDate(), "计划完工日期格式不正确"));
+        project.setProjectStatus(defaultText(request.getProjectStatus(), "在建"));
+        project.setProjectManagerName(request.getProjectManagerName());
+        project.setProjectDesc(request.getProjectDesc());
+    }
+
+    private void applyMemberSave(PmProjectMember member, ProjectMemberSaveRequest request, PmProject project) {
+        member.setProjectId(project.getId());
+        member.setProjectDeptName(firstNonBlank(request.getProjectDeptName(), project.getProjectName() + "项目部"));
+        member.setEmployeeName(requiredText(request.getEmployeeName(), "员工姓名不能为空"));
+        member.setPositionName(requiredText(request.getPositionName(), "岗位不能为空"));
+        member.setArrivalDate(parseDateValue(request.getArrivalDate(), "到岗日期格式不正确"));
+        member.setLeaveDate(parseDateValue(request.getLeaveDate(), "离岗日期格式不正确"));
+        member.setOnDuty(request.getOnDuty() == null ? 1 : request.getOnDuty());
     }
 
     public List<Map<String, Object>> listLeaves(String keyword, String status) {
@@ -351,115 +441,147 @@ public class ProjectManagementService {
     }
 
     private void ensureSeedProjects() {
-        Long count = projectMapper.selectCount(null);
-        if (count != null && count > 0) {
-            return;
-        }
-        PmProject project1 = new PmProject();
-        project1.setProjectCode("XM-2026-001");
-        project1.setProjectName("G3018 精河至阿拉山口机电施工项目");
-        project1.setProjectType("高速机电");
-        project1.setLocation("博州阿拉山口");
-        project1.setOwnerOrg("新疆交投建设管理中心");
-        project1.setContractAmount(new BigDecimal("12800000.00"));
-        project1.setStartDate(LocalDate.parse("2026-01-10"));
-        project1.setPlannedFinishDate(LocalDate.parse("2026-12-31"));
-        project1.setProjectStatus("在建");
-        project1.setProjectManagerName("刘建国");
-        project1.setProjectDesc("首版种子项目");
-        projectMapper.insert(project1);
-
-        PmProject project2 = new PmProject();
-        project2.setProjectCode("XM-2026-002");
-        project2.setProjectName("乌尉高速乌拉泊互通监控通信项目");
-        project2.setProjectType("监控通信");
-        project2.setLocation("乌鲁木齐");
-        project2.setOwnerOrg("乌尉高速项目公司");
-        project2.setContractAmount(new BigDecimal("8600000.00"));
-        project2.setStartDate(LocalDate.parse("2026-02-01"));
-        project2.setPlannedFinishDate(LocalDate.parse("2026-11-30"));
-        project2.setProjectStatus("在建");
-        project2.setProjectManagerName("王志强");
-        project2.setProjectDesc("首版种子项目");
-        projectMapper.insert(project2);
+        ensureProjectSeed("XM-2026-001", "G3018 精河至阿拉山口机电施工项目", "高速机电", "博州阿拉山口", "新疆交投建设管理中心", "12800000.00", "2026-01-10", "2026-12-31", "在建", "刘建国", "收费、监控、通信综合实施项目");
+        ensureProjectSeed("XM-2026-002", "乌尉高速乌拉泊互通监控通信项目", "监控通信", "乌鲁木齐", "乌尉高速项目公司", "8600000.00", "2026-02-01", "2026-11-30", "在建", "王志强", "监控通信分项工程");
+        ensureProjectSeed("XM-2026-003", "G580 阿拉尔至和田机电设备安装项目", "机电安装", "阿拉尔-和田", "新疆生产建设兵团交建公司", "15600000.00", "2026-03-05", "2026-12-20", "在建", "魏小军", "沿线收费、通信、供配电系统安装");
+        ensureProjectSeed("XM-2026-004", "S12 线监控中心升级改造项目", "信息化改造", "昌吉", "昌吉州交投公司", "4200000.00", "2026-04-01", "2026-09-30", "筹备中", "张晓峰", "监控中心软硬件升级");
     }
 
     private void ensureSeedMembers() {
-        Long count = projectMemberMapper.selectCount(null);
-        if (count != null && count > 0) {
-            return;
-        }
         PmProject project1 = getProjectByCode("XM-2026-001");
         PmProject project2 = getProjectByCode("XM-2026-002");
-        if (project1 == null || project2 == null) {
-            return;
-        }
-        projectMemberMapper.insert(seedMember(project1.getId(), "精河项目部", "张凯", "项目经理", "2026-01-10", null, 1));
-        projectMemberMapper.insert(seedMember(project1.getId(), "精河项目部", "李雪", "资料员", "2026-02-01", null, 1));
-        projectMemberMapper.insert(seedMember(project2.getId(), "乌拉泊项目部", "陈涛", "施工员", "2026-01-18", null, 1));
+        PmProject project3 = getProjectByCode("XM-2026-003");
+        PmProject project4 = getProjectByCode("XM-2026-004");
+        ensureMemberSeed(project1, "精河项目部", "张凯", "项目经理", "2026-01-10", null, 1);
+        ensureMemberSeed(project1, "精河项目部", "李雪", "资料员", "2026-02-01", null, 1);
+        ensureMemberSeed(project1, "精河项目部", "周鹏", "安全员", "2026-02-15", null, 1);
+        ensureMemberSeed(project2, "乌拉泊项目部", "陈涛", "施工员", "2026-01-18", null, 1);
+        ensureMemberSeed(project2, "乌拉泊项目部", "马燕", "试验员", "2026-02-08", null, 1);
+        ensureMemberSeed(project3, "和田项目部", "魏小军", "项目经理", "2026-03-05", null, 1);
+        ensureMemberSeed(project3, "和田项目部", "赵敏", "预算员", "2026-03-10", null, 1);
+        ensureMemberSeed(project4, "昌吉项目部", "张晓峰", "项目经理", "2026-04-01", null, 1);
     }
 
     private void ensureSeedTasks() {
-        Long count = taskMapper.selectCount(null);
-        if (count != null && count > 0) {
-            return;
-        }
         PmProject project1 = getProjectByCode("XM-2026-001");
         PmProject project2 = getProjectByCode("XM-2026-002");
-        if (project1 == null || project2 == null) {
-            return;
-        }
-        taskMapper.insert(seedTask("TASK-20260414-001", project1.getId(), project1.getProjectName(), "精河项目部", "收费站光纤测试", "王志强", "李雪", "高", "2026-04-18", "进行中"));
-        taskMapper.insert(seedTask("TASK-20260414-002", project2.getId(), project2.getProjectName(), "乌拉泊项目部", "监控立杆基础复测", "王志强", "陈涛", "中", "2026-04-20", "待接收"));
+        PmProject project3 = getProjectByCode("XM-2026-003");
+        ensureTaskSeed("TASK-20260414-001", project1, "精河项目部", "收费站光纤测试", "刘建国", "李雪", "高", "2026-04-18", "进行中");
+        ensureTaskSeed("TASK-20260414-002", project2, "乌拉泊项目部", "监控立杆基础复测", "王志强", "陈涛", "中", "2026-04-20", "待接收");
+        ensureTaskSeed("TASK-20260414-003", project1, "精河项目部", "收费岛设备联调", "刘建国", "张凯", "高", "2026-04-22", "待处理");
+        ensureTaskSeed("TASK-20260414-004", project3, "和田项目部", "和田段供电设备清点", "魏小军", "赵敏", "中", "2026-04-23", "进行中");
+        ensureTaskSeed("TASK-20260414-005", project3, "和田项目部", "机房桥架安装验收", "魏小军", "魏小军", "高", "2026-04-25", "待接收");
     }
 
     private void ensureSeedReports() {
-        Long count = weeklyReportMapper.selectCount(null);
-        if (count != null && count > 0) {
-            return;
-        }
         PmProject project1 = getProjectByCode("XM-2026-001");
-        if (project1 == null) {
-            return;
-        }
-        PmWeeklyReport report = new PmWeeklyReport();
-        report.setReportCode("WR-20260414-001");
-        report.setProjectId(project1.getId());
-        report.setProjectName(project1.getProjectName());
-        report.setProjectDeptName("精河项目部");
-        report.setReportUserName("李雪");
-        report.setWeekLabel("2026年第16周");
-        report.setReportDate(LocalDate.parse("2026-04-14"));
-        report.setCompletedWorkText("完成收费站监控点位核对\n完成机房设备到货清点");
-        report.setUnfinishedWorkText("通信管道整改未完成");
-        report.setUnfinishedReasonText("材料未到场\n外部协调未完成");
-        report.setNextWeekPlanText("推进通信管道整改\n完成监控设备安装");
-        report.setSupportNeeds("协调土建单位提供作业面");
-        weeklyReportMapper.insert(report);
+        PmProject project2 = getProjectByCode("XM-2026-002");
+        PmProject project3 = getProjectByCode("XM-2026-003");
+        ensureWeeklyReportSeed("WR-20260414-001", project1, "精河项目部", "李雪", "2026年第16周",
+                "2026-04-14", "完成收费站监控点位核对\n完成机房设备到货清点",
+                "通信管道整改未完成", "材料未到场\n外部协调未完成",
+                "推进通信管道整改\n完成监控设备安装", "协调土建单位提供作业面", "需同步设备到货计划");
+        ensureWeeklyReportSeed("WR-20260414-002", project2, "乌拉泊项目部", "陈涛", "2026年第16周",
+                "2026-04-14", "完成立杆基础复核\n完成监控箱体位置确认",
+                "监控杆件安装未启动", "吊装资源尚未进场",
+                "落实吊装班组\n开始首批杆件安装", "协调总包开放吊装作业面", "");
+        ensureWeeklyReportSeed("WR-20260414-003", project3, "和田项目部", "赵敏", "2026年第16周",
+                "2026-04-15", "完成设备台账梳理\n完成仓储区布置",
+                "预算清单复核未完成", "业主清单版本仍在调整",
+                "完成预算清单锁定\n推进主材订货", "请商务部支持确认最终清单版本", "预计下周进入设备订货");
     }
 
     private void ensureSeedLeaves() {
-        Long count = leaveMapper.selectCount(null);
-        if (count != null && count > 0) {
+        PmProject project2 = getProjectByCode("XM-2026-002");
+        PmProject project3 = getProjectByCode("XM-2026-003");
+        ensureLeaveSeed("LEAVE-20260415-001", project2, "乌拉泊项目部", "陈涛", "事假",
+                "2026-04-16 09:00:00", "2026-04-17 18:00:00", "2.0", "家中有事", "待项目经理审批");
+        ensureLeaveSeed("LEAVE-20260415-002", project3, "和田项目部", "赵敏", "调休",
+                "2026-04-18 10:00:00", "2026-04-18 19:00:00", "1.0", "个人事务办理", "待部门经理审批");
+        ensureLeaveSeed("LEAVE-20260415-003", project3, "和田项目部", "魏小军", "年假",
+                "2026-04-20 09:00:00", "2026-04-21 18:00:00", "2.0", "年度休假", "已通过");
+    }
+
+    private void ensureProjectSeed(String code, String name, String type, String location, String ownerOrg, String contractAmount,
+                                   String startDate, String finishDate, String status, String manager, String desc) {
+        if (getProjectByCode(code) != null) {
             return;
         }
-        PmProject project2 = getProjectByCode("XM-2026-002");
-        if (project2 == null) {
+        PmProject project = new PmProject();
+        project.setProjectCode(code);
+        project.setProjectName(name);
+        project.setProjectType(type);
+        project.setLocation(location);
+        project.setOwnerOrg(ownerOrg);
+        project.setContractAmount(new BigDecimal(contractAmount));
+        project.setStartDate(LocalDate.parse(startDate));
+        project.setPlannedFinishDate(LocalDate.parse(finishDate));
+        project.setProjectStatus(status);
+        project.setProjectManagerName(manager);
+        project.setProjectDesc(desc);
+        projectMapper.insert(project);
+    }
+
+    private void ensureMemberSeed(PmProject project, String deptName, String employeeName, String positionName, String arrivalDate, String leaveDate, Integer onDuty) {
+        if (project == null || hasMember(project.getId(), employeeName)) {
+            return;
+        }
+        projectMemberMapper.insert(seedMember(project.getId(), deptName, employeeName, positionName, arrivalDate, leaveDate, onDuty));
+    }
+
+    private void ensureTaskSeed(String taskCode, PmProject project, String projectDeptName, String taskTitle, String assignerName,
+                                String assigneeName, String priority, String requiredFinishDate, String taskStatus) {
+        if (project == null || getTaskByCode(taskCode) != null) {
+            return;
+        }
+        taskMapper.insert(seedTask(taskCode, project.getId(), project.getProjectName(), projectDeptName, taskTitle, assignerName, assigneeName, priority, requiredFinishDate, taskStatus));
+    }
+
+    private void ensureWeeklyReportSeed(String reportCode, PmProject project, String deptName, String reportUserName, String weekLabel,
+                                        String reportDate, String completedText, String unfinishedText, String unfinishedReason,
+                                        String nextWeekPlan, String supportNeeds, String remark) {
+        if (project == null || getWeeklyReportByCode(reportCode) != null) {
+            return;
+        }
+        PmWeeklyReport report = new PmWeeklyReport();
+        report.setReportCode(reportCode);
+        report.setProjectId(project.getId());
+        report.setProjectName(project.getProjectName());
+        report.setProjectDeptName(deptName);
+        report.setReportUserName(reportUserName);
+        report.setWeekLabel(weekLabel);
+        report.setReportDate(LocalDate.parse(reportDate));
+        report.setCompletedWorkText(completedText);
+        report.setUnfinishedWorkText(unfinishedText);
+        report.setUnfinishedReasonText(unfinishedReason);
+        report.setNextWeekPlanText(nextWeekPlan);
+        report.setSupportNeeds(supportNeeds);
+        report.setRemark(remark);
+        weeklyReportMapper.insert(report);
+    }
+
+    private void ensureLeaveSeed(String leaveCode, PmProject project, String deptName, String applicantName, String leaveType,
+                                 String startTime, String endTime, String leaveDays, String reason, String status) {
+        if (project == null || getLeaveByCode(leaveCode) != null) {
             return;
         }
         PmLeave leave = new PmLeave();
-        leave.setLeaveCode("LEAVE-20260415-001");
-        leave.setApplicantName("陈涛");
-        leave.setProjectId(project2.getId());
-        leave.setProjectName(project2.getProjectName());
-        leave.setProjectDeptName("乌拉泊项目部");
-        leave.setLeaveType("事假");
-        leave.setStartTime(parseDateTime("2026-04-16 09:00:00", "开始时间格式不正确"));
-        leave.setEndTime(parseDateTime("2026-04-17 18:00:00", "结束时间格式不正确"));
-        leave.setLeaveDays(BigDecimal.valueOf(2.0));
-        leave.setReason("家中有事");
-        leave.setApprovalStatus("待项目经理审批");
-        leave.setSubmittedAt(LocalDateTime.parse("2026-04-15 09:30:00", DATE_TIME_FORMATTER));
+        leave.setLeaveCode(leaveCode);
+        leave.setApplicantName(applicantName);
+        leave.setProjectId(project.getId());
+        leave.setProjectName(project.getProjectName());
+        leave.setProjectDeptName(deptName);
+        leave.setLeaveType(leaveType);
+        leave.setStartTime(parseDateTime(startTime, "开始时间格式不正确"));
+        leave.setEndTime(parseDateTime(endTime, "结束时间格式不正确"));
+        leave.setLeaveDays(new BigDecimal(leaveDays));
+        leave.setReason(reason);
+        leave.setApprovalStatus(status);
+        leave.setSubmittedAt(LocalDateTime.parse(startTime, DATE_TIME_FORMATTER).minusHours(4));
+        if ("已通过".equals(status)) {
+            leave.setApprovedBy("系统管理员");
+            leave.setApprovedAt(LocalDateTime.parse(startTime, DATE_TIME_FORMATTER).minusHours(2));
+        }
         leaveMapper.insert(leave);
     }
 
@@ -584,6 +706,32 @@ public class ProjectManagementService {
         LambdaQueryWrapper<PmProject> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PmProject::getProjectCode, code).last("limit 1");
         return projectMapper.selectOne(wrapper);
+    }
+
+    private boolean hasMember(Long projectId, String employeeName) {
+        LambdaQueryWrapper<PmProjectMember> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PmProjectMember::getProjectId, projectId)
+                .eq(PmProjectMember::getEmployeeName, employeeName)
+                .last("limit 1");
+        return projectMemberMapper.selectOne(wrapper) != null;
+    }
+
+    private PmTask getTaskByCode(String taskCode) {
+        LambdaQueryWrapper<PmTask> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PmTask::getTaskCode, taskCode).last("limit 1");
+        return taskMapper.selectOne(wrapper);
+    }
+
+    private PmWeeklyReport getWeeklyReportByCode(String reportCode) {
+        LambdaQueryWrapper<PmWeeklyReport> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PmWeeklyReport::getReportCode, reportCode).last("limit 1");
+        return weeklyReportMapper.selectOne(wrapper);
+    }
+
+    private PmLeave getLeaveByCode(String leaveCode) {
+        LambdaQueryWrapper<PmLeave> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PmLeave::getLeaveCode, leaveCode).last("limit 1");
+        return leaveMapper.selectOne(wrapper);
     }
 
     private Map<String, Object> mapProject(PmProject project) {
@@ -727,6 +875,28 @@ public class ProjectManagementService {
             return LocalDate.parse(value, DATE_FORMATTER);
         } catch (Exception exception) {
             throw new BizException("要求完成时间格式不正确");
+        }
+    }
+
+    private LocalDate parseDateValue(String value, String message) {
+        if (!hasText(value)) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value, DATE_FORMATTER);
+        } catch (Exception exception) {
+            throw new BizException(message);
+        }
+    }
+
+    private BigDecimal parseAmount(String value) {
+        if (!hasText(value)) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(value.trim().replace(",", "").replace("，", ""));
+        } catch (Exception exception) {
+            throw new BizException("合同金额格式不正确");
         }
     }
 

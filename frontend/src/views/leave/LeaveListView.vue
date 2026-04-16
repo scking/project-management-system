@@ -1,22 +1,37 @@
 <template>
-  <div class="page-shell">
-    <el-card>
-      <template #header>
-        <div class="card-header-row">
-          <span>请假审批管理</span>
-          <el-button type="primary" @click="openCreate">发起请假</el-button>
-        </div>
-      </template>
-      <div class="toolbar-row">
-        <el-input v-model="query.keyword" placeholder="搜索请假单编号 / 申请人 / 项目" clearable class="toolbar-input" />
-        <el-select v-model="query.status" clearable placeholder="审批状态" class="toolbar-select">
-          <el-option label="待项目经理审批" value="待项目经理审批" />
-          <el-option label="待部门经理审批" value="待部门经理审批" />
-          <el-option label="已通过" value="已通过" />
-          <el-option label="已驳回" value="已驳回" />
-        </el-select>
-        <el-button type="primary" @click="loadData">查询</el-button>
+  <div class="saas-list-page">
+    <div class="saas-page-header">
+      <div>
+        <h2 class="saas-page-title">请假审批管理</h2>
+        <p class="saas-page-subtitle">发起请假申请,按流程进行项目经理/部门经理两级审批</p>
       </div>
+      <div class="saas-row-actions">
+        <el-button type="primary" @click="openCreate">
+          <el-icon><Plus /></el-icon>
+          <span>发起请假</span>
+        </el-button>
+      </div>
+    </div>
+
+    <div class="saas-toolbar">
+      <el-input
+        v-model="query.keyword"
+        placeholder="搜索请假单编号 / 申请人 / 项目"
+        clearable
+        class="toolbar-input"
+        :prefix-icon="Search"
+        @keyup.enter="loadData"
+      />
+      <el-select v-model="query.status" clearable placeholder="审批状态" class="toolbar-select">
+        <el-option label="待项目经理审批" value="待项目经理审批" />
+        <el-option label="待部门经理审批" value="待部门经理审批" />
+        <el-option label="已通过" value="已通过" />
+        <el-option label="已驳回" value="已驳回" />
+      </el-select>
+      <el-button type="primary" @click="loadData">查询</el-button>
+    </div>
+
+    <section class="saas-card is-flush">
       <el-table :data="rows" stripe>
         <el-table-column prop="leaveCode" label="请假单编号" width="170" />
         <el-table-column prop="applicantName" label="申请人" width="120" />
@@ -27,11 +42,13 @@
         <el-table-column prop="approvalStatus" label="审批状态" width="140" />
         <el-table-column label="操作" width="150">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openApprove(row)">审批</el-button>
+            <div class="saas-row-actions">
+              <el-button link type="primary" @click="openApprove(row)">审批</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </section>
 
     <el-dialog v-model="dialogVisible" title="请假申请" width="720px">
       <el-form :model="form" label-width="110px">
@@ -94,6 +111,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
+import { Plus, Search } from "@element-plus/icons-vue";
 import { leaveApi } from "@/api/leave";
 
 const leaveTypes = ["事假", "病假", "调休", "年假", "婚假", "丧假", "其他"];

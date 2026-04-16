@@ -7,10 +7,10 @@ public record AuthUserVO(
         String username,
         String realName,
         Long deptId,
+        String deptName,
         List<String> roleCodes,
         List<String> permissionCodes,
         Integer dataScope,
         String accessToken
 ) {
 }
-
