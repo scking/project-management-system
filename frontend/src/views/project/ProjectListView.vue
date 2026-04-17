@@ -61,8 +61,12 @@
           <el-form-item label="项目地点"><el-input v-model="form.location" /></el-form-item>
           <el-form-item label="建设单位"><el-input v-model="form.ownerOrg" /></el-form-item>
           <el-form-item label="合同金额"><el-input v-model="form.contractAmount" /></el-form-item>
-          <el-form-item label="开始日期"><el-input v-model="form.startDate" placeholder="2026-04-15" /></el-form-item>
-          <el-form-item label="计划完工"><el-input v-model="form.plannedFinishDate" placeholder="2026-12-31" /></el-form-item>
+          <el-form-item label="开始日期">
+            <el-date-picker v-model="form.startDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+          </el-form-item>
+          <el-form-item label="计划完工">
+            <el-date-picker v-model="form.plannedFinishDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+          </el-form-item>
           <el-form-item label="项目状态"><el-input v-model="form.projectStatus" /></el-form-item>
           <el-form-item label="项目经理"><el-input v-model="form.projectManagerName" /></el-form-item>
         </div>

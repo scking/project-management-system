@@ -35,15 +35,19 @@
       <el-form :model="form" label-width="100px">
         <div class="form-grid-2">
           <el-form-item label="所属项目">
-            <el-select v-model="form.projectId" placeholder="请选择项目" style="width: 100%">
+            <el-select v-model="form.projectId" placeholder="请选择项目" style="width: 100%" @change="handleProjectChange">
               <el-option v-for="item in projectOptions" :key="item.id" :label="item.projectName" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item label="所属项目部"><el-input v-model="form.projectDeptName" /></el-form-item>
           <el-form-item label="员工姓名"><el-input v-model="form.employeeName" /></el-form-item>
           <el-form-item label="岗位"><el-input v-model="form.positionName" /></el-form-item>
-          <el-form-item label="到岗时间"><el-input v-model="form.arrivalDate" placeholder="2026-04-15" /></el-form-item>
-          <el-form-item label="离岗时间"><el-input v-model="form.leaveDate" placeholder="2026-04-30" /></el-form-item>
+          <el-form-item label="到岗时间">
+            <el-date-picker v-model="form.arrivalDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+          </el-form-item>
+          <el-form-item label="离岗时间">
+            <el-date-picker v-model="form.leaveDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+          </el-form-item>
           <el-form-item label="是否在岗">
             <el-switch v-model="onDutyBool" />
           </el-form-item>
@@ -93,6 +97,13 @@ async function loadData() {
 async function loadProjects() {
   const res = await projectApi.projectList();
   projectOptions.value = res.data || [];
+}
+
+function handleProjectChange(projectId: number) {
+  const current = projectOptions.value.find((item) => item.id === projectId);
+  if (current) {
+    form.projectDeptName = `${current.projectName}项目部`;
+  }
 }
 
 function resetForm() {

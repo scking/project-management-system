@@ -125,6 +125,12 @@ public class ProjectManagementController {
         return ApiResponse.ok(service.listWeeklyReports(keyword));
     }
 
+    @GetMapping("/weekly-reports/{id}")
+    @RequirePermission("project:weekly-report:view")
+    public ApiResponse<Map<String, Object>> weeklyReportById(@PathVariable Long id) {
+        return ApiResponse.ok(service.getWeeklyReportById(id));
+    }
+
     @PostMapping("/weekly-reports")
     @RequirePermission("project:weekly-report:view")
     @OperationLogRecord(module = "项目管理", operation = "CREATE", bizType = "WEEKLY_REPORT", description = "提交周报")

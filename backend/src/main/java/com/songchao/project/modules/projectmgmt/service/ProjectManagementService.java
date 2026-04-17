@@ -258,6 +258,12 @@ public class ProjectManagementService {
         return weeklyReportMapper.selectList(wrapper).stream().map(this::mapWeeklyReport).collect(Collectors.toList());
     }
 
+    public Map<String, Object> getWeeklyReportById(Long id) {
+        PmWeeklyReport report = weeklyReportMapper.selectById(id);
+        if (report == null) throw new IllegalArgumentException("周报不存在");
+        return mapWeeklyReport(report);
+    }
+
     public Map<String, Object> createWeeklyReport(WeeklyReportSaveRequest request) {
         PmProject project = resolveProject(request.getProjectId(), request.getProjectName());
 

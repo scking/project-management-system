@@ -53,14 +53,35 @@
     <el-dialog v-model="dialogVisible" title="请假申请" width="720px">
       <el-form :model="form" label-width="110px">
         <div class="form-grid-2">
-          <el-form-item label="申请人">
-            <el-input v-model="form.applicantName" />
-          </el-form-item>
           <el-form-item label="所属项目">
-            <el-input v-model="form.projectName" />
+            <el-select
+              v-model="form.projectId"
+              filterable
+              placeholder="请选择项目"
+              style="width: 100%"
+              @change="handleProjectChange"
+            >
+              <el-option v-for="item in projectOptions" :key="item.id" :label="item.projectName" :value="item.id" />
+            </el-select>
           </el-form-item>
           <el-form-item label="所属项目部">
-            <el-input v-model="form.projectDeptName" />
+            <el-input v-model="form.projectDeptName" readonly />
+          </el-form-item>
+          <el-form-item label="申请人">
+            <el-select
+              v-model="form.applicantName"
+              filterable
+              clearable
+              placeholder="请选择申请人"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in filteredMemberOptions"
+                :key="item.id"
+                :label="`${item.employeeName}（${item.positionName}）`"
+                :value="item.employeeName"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="请假类型">
             <el-select v-model="form.leaveType">
@@ -109,18 +130,22 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { Plus, Search } from "@element-plus/icons-vue";
 import { leaveApi } from "@/api/leave";
+import { projectApi } from "@/api/project";
 
 const leaveTypes = ["事假", "病假", "调休", "年假", "婚假", "丧假", "其他"];
 const query = reactive({ keyword: "", status: "" });
 const rows = ref<any[]>([]);
+const projectOptions = ref<any[]>([]);
+const memberOptions = ref<any[]>([]);
 const dialogVisible = ref(false);
 const approveVisible = ref(false);
 const currentId = ref<number | null>(null);
 const form = reactive({
+  projectId: undefined as number | undefined,
   applicantName: "",
   projectName: "",
   projectDeptName: "",
@@ -130,6 +155,9 @@ const form = reactive({
   leaveDays: 1,
   reason: "",
 });
+const filteredMemberOptions = computed(() =>
+  memberOptions.value.filter((item) => !form.projectId || item.projectId === form.projectId),
+);
 const approveForm = reactive({
   action: "同意",
   comment: "",
@@ -140,8 +168,22 @@ async function loadData() {
   rows.value = res.data || [];
 }
 
+async function loadBaseOptions() {
+  const [projectRes, memberRes] = await Promise.all([projectApi.projectList(), projectApi.memberList()]);
+  projectOptions.value = projectRes.data || [];
+  memberOptions.value = memberRes.data || [];
+}
+
+function handleProjectChange(projectId: number) {
+  const current = projectOptions.value.find((item) => item.id === projectId);
+  form.projectName = current?.projectName || "";
+  form.projectDeptName = current?.projectName ? `${current.projectName}项目部` : "";
+  form.applicantName = "";
+}
+
 function openCreate() {
   Object.assign(form, {
+    projectId: undefined,
     applicantName: "",
     projectName: "",
     projectDeptName: "",
@@ -155,6 +197,14 @@ function openCreate() {
 }
 
 async function submitForm() {
+  if (!form.projectId) {
+    ElMessage.warning("请选择所属项目");
+    return;
+  }
+  if (!form.applicantName) {
+    ElMessage.warning("请选择申请人");
+    return;
+  }
   await leaveApi.create(form);
   ElMessage.success("请假申请已提交");
   dialogVisible.value = false;
@@ -175,5 +225,7 @@ async function submitApprove() {
   await loadData();
 }
 
-onMounted(loadData);
+onMounted(async () => {
+  await Promise.all([loadData(), loadBaseOptions()]);
+});
 </script>

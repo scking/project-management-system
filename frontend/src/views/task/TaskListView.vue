@@ -56,16 +56,38 @@
       <el-form :model="form" label-width="110px">
         <div class="form-grid-2">
           <el-form-item label="所属项目">
-            <el-input v-model="form.projectName" />
+            <el-select
+              v-model="form.projectId"
+              filterable
+              placeholder="请选择项目"
+              style="width: 100%"
+              @change="handleProjectChange"
+            >
+              <el-option v-for="item in projectOptions" :key="item.id" :label="item.projectName" :value="item.id" />
+            </el-select>
           </el-form-item>
           <el-form-item label="所属项目部">
-            <el-input v-model="form.projectDeptName" />
+            <el-input v-model="form.projectDeptName" readonly />
           </el-form-item>
           <el-form-item label="任务标题">
             <el-input v-model="form.taskTitle" />
           </el-form-item>
           <el-form-item label="指派对象">
-            <el-input v-model="form.assigneeName" />
+            <el-select
+              v-model="form.assigneeId"
+              filterable
+              clearable
+              placeholder="请选择项目成员"
+              style="width: 100%"
+              @change="handleAssigneeChange"
+            >
+              <el-option
+                v-for="item in filteredMemberOptions"
+                :key="item.id"
+                :label="`${item.employeeName}（${item.positionName}）`"
+                :value="item.id"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="优先级">
             <el-select v-model="form.priority">
@@ -94,36 +116,68 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { Plus, Search } from "@element-plus/icons-vue";
 import { taskApi } from "@/api/task";
+import { projectApi } from "@/api/project";
 
 const taskStatusOptions = ["待接收", "进行中", "已完成", "未完成", "已延期", "已关闭"];
 const query = reactive({ keyword: "", status: "" });
 const rows = ref<any[]>([]);
+const projectOptions = ref<any[]>([]);
+const memberOptions = ref<any[]>([]);
 const dialogVisible = ref(false);
 const form = reactive({
+  projectId: undefined as number | undefined,
   projectName: "",
   projectDeptName: "",
   taskTitle: "",
+  assigneeId: undefined as number | undefined,
   assigneeName: "",
   priority: "中",
   requiredFinishDate: "",
   taskContent: "",
   remark: "",
 });
+const filteredMemberOptions = computed(() =>
+  memberOptions.value.filter((item) => !form.projectId || item.projectId === form.projectId),
+);
 
 async function loadData() {
   const res = await taskApi.list(query);
   rows.value = res.data || [];
 }
 
+async function loadBaseOptions() {
+  const [projectRes, memberRes] = await Promise.all([projectApi.projectList(), projectApi.memberList()]);
+  projectOptions.value = projectRes.data || [];
+  memberOptions.value = memberRes.data || [];
+}
+
+function handleProjectChange(projectId: number) {
+  const current = projectOptions.value.find((item) => item.id === projectId);
+  form.projectName = current?.projectName || "";
+  form.projectDeptName = current?.projectName ? `${current.projectName}项目部` : "";
+  form.assigneeId = undefined;
+  form.assigneeName = "";
+}
+
+function handleAssigneeChange(memberId: number) {
+  const current = filteredMemberOptions.value.find((item) => item.id === memberId);
+  form.assigneeName = current?.employeeName || "";
+  if (!form.projectDeptName) {
+    form.projectDeptName = current?.projectDeptName || "";
+  }
+}
+
 function openCreate() {
   Object.assign(form, {
+    projectId: undefined,
     projectName: "",
     projectDeptName: "",
     taskTitle: "",
+    assigneeId: undefined,
     assigneeName: "",
     priority: "中",
     requiredFinishDate: "",
@@ -134,6 +188,14 @@ function openCreate() {
 }
 
 async function submitForm() {
+  if (!form.projectId) {
+    ElMessage.warning("请选择所属项目");
+    return;
+  }
+  if (!form.assigneeId && !form.assigneeName.trim()) {
+    ElMessage.warning("请选择指派对象");
+    return;
+  }
   await taskApi.create(form);
   ElMessage.success("任务已创建");
   dialogVisible.value = false;
@@ -146,5 +208,7 @@ async function updateStatus(row: any, status: string) {
   await loadData();
 }
 
-onMounted(loadData);
+onMounted(async () => {
+  await Promise.all([loadData(), loadBaseOptions()]);
+});
 </script>
